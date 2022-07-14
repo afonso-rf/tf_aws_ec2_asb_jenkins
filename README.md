@@ -3,8 +3,11 @@
 
   Utililize as variaveis de ambiente abaixo para as chaves de acesso ou utilize o AWS-Cli
 
+    export AWS_ACCESS_KEY_ID="anaccesskey"
+    export AWS_SECRET_ACCESS_KEY="asecretkey"
 
-[Ansible Playbook](ansible/playbook.yml)
+Veja o [Ansible Playbook](ansible/playbook.yml) tambem.
+
 
 
 ## Requirements
@@ -46,12 +49,10 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_ami"></a> [ami](#input\_ami) | image | `string` | `"data.aws_ami.ubuntu.id"` | no |
-| <a name="input_env"></a> [env](#input\_env) | Environment of the application | `string` | `"dev"` | no |
+| <a name="input_env"></a> [env](#input\_env) | Ambiente da aplicação | `string` | `"dev"` | no |
 | <a name="input_instance_type"></a> [instance\_type](#input\_instance\_type) | Tipo do shape da instancia | `string` | `"t2.micro"` | no |
-| <a name="input_key_name"></a> [key\_name](#input\_key\_name) | Access key SSH EC2 | `string` | `"terraform_ec2"` | no |
 | <a name="input_name"></a> [name](#input\_name) | Nome da instancia | `string` | `"jenkins"` | no |
-| <a name="input_region"></a> [region](#input\_region) | Region | `string` | `"us-east-1"` | no |
+| <a name="input_region"></a> [region](#input\_region) | Região AWS | `string` | `"us-east-1"` | no |
 
 ## Outputs
 
