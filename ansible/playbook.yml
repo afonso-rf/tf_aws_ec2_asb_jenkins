@@ -1,0 +1,93 @@
+---
+- name: Playbook Instalando o Jenkins
+  hosts: all
+  become: yes
+  
+  vars:
+    username: jenkins
+
+  tasks:
+  - name: Instalando pacotes basicos
+    ansible.builtin.apt:
+      name: [curl, aptitude, ca-certificates]
+      update_cache: yes
+      state: present
+
+  - name: Adicionando chave do repo
+    ansible.builtin.shell:
+      cmd: curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io.key | sudo tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null
+      creates: /usr/share/keyrings/jenkins-keyring.asc
+
+  - name: Adicionando repositorio do Jenkins
+    ansible.builtin.shell:
+      cmd: echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian binary/ | sudo tee /etc/apt/sources.list.d/jenkins.list > /dev/null
+      creates: /etc/apt/sources.list.d/jenkins.list
+
+  - name: Adicionando chave do repo Docker
+    ansible.builtin.apt_key:
+      url: https://download.docker.com/{{ ansible_system | lower }}/{{ ansible_distribution | lower }}/gpg
+      state: present
+
+  - name: Adicionando repositorio Docker
+    ansible.builtin.apt_repository:
+      repo: deb https://download.docker.com/{{ ansible_system | lower }}/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} stable
+      state: present
+
+  - name: Instalando o Docker
+    ansible.builtin.apt:
+      name: [docker-ce, docker-ce-cli, containerd.io]
+      state: present
+      update_cache: yes
+
+  - name: Instalando o jenkins
+    ansible.builtin.apt:
+      name: [fontconfig, openjdk-11-jre, jenkins]
+      state: present
+      update_cache: yes
+
+  - name: Adicionado Usuario Jenkins no grupo docker
+    ansible.builtin.user:
+      name: jenkins
+      groups: docker
+      append: yes
+      state: present
+
+  - name: Startando o Jenkins
+    ansible.builtin.service:
+      name: jenkins
+      state: started
+
+  - name: Adicionado o usuario "{{ username }}"
+    ansible.builtin.user:
+      name: {{ username }}
+      groups: docker
+      append: yes
+      state: present
+
+  - name: Liberando o sudo nopasswd o usuario "{{ username }}"
+    community.general.sudoers:
+      name: "{{ username }}"
+      state: present
+      user: "{{ username }}"
+      commands: ALL
+      nopassword: yes
+  
+  - name: Setando Authorized Key para o usuario "{{ username }}"
+    ansible.posix.authorized_key:
+      user: "{{ username }}"
+      state: present
+      key: "{{ lookup('file', '/code/id_ssh_key.pub') }}"
+
+  - name: Get initialAdminPassword do Jenkins
+    ansible.builtin.shell:
+      cmd: cat /var/lib/jenkins/secrets/initialAdminPassword
+    register: InitialPassword
+
+  
+  - name: Link e InitialPassword para acesso ao Jenkins
+    ansible.builtin.debug:
+      msg:
+        - "Link: http://{{ item }}:8080"
+        - "Passwd: {{ InitialPassword.stdout }}"
+    with_inventory_hostnames:
+      - all[0]
