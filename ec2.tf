@@ -23,7 +23,7 @@ resource "aws_instance" "instance" {
   subnet_id                   = aws_subnet.subnet_public.id
   associate_public_ip_address = true
   vpc_security_group_ids      = [aws_security_group.open_ports.id]
-  
+
   provisioner "remote-exec" {
     inline = [
       "sudo apt-get update",
